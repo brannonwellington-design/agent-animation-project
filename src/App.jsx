@@ -22,6 +22,32 @@ const CW   = ["tc","rt","rb","bc","lb","lt"]
 function easeInOut(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t }
 function easeOut(t)   { return 1 - Math.pow(1-t, 3) }
 
+// Find optimal dot assignment: maps each current dot to the nearest target slot
+// Uses greedy nearest-neighbor (good enough for 7 dots, avoids O(n!) brute force)
+function findBestRemap(currentPos, targetPos) {
+  const remap = {}  // remap[dotId] = targetDotId — "dot dotId should animate toward target targetDotId"
+  const available = new Set(DOTS)
+  // Sort by distance to ensure best matches get priority
+  const pairs = []
+  for (const from of DOTS) {
+    for (const to of DOTS) {
+      const [fx, fy] = currentPos[from]
+      const [tx, ty] = targetPos[to]
+      pairs.push({ from, to, dist: Math.hypot(fx - tx, fy - ty) })
+    }
+  }
+  pairs.sort((a, b) => a.dist - b.dist)
+  const usedFrom = new Set()
+  for (const { from, to } of pairs) {
+    if (usedFrom.has(from) || !available.has(to)) continue
+    remap[from] = to
+    usedFrom.add(from)
+    available.delete(to)
+    if (usedFrom.size === DOTS.length) break
+  }
+  return remap
+}
+
 function modeStatic(t, r)  { return { pos:{...HOME}, r:Object.fromEntries(DOTS.map(d=>[d,r])) } }
 
 function modeBreathe(t, baseR) {
@@ -1000,10 +1026,14 @@ function ListenLabsIcon({ mode="breathe", speed=2, dotRadius=8, color=B.accent, 
         const newFn = MODES[mode] || modeStatic
         const { pos: toPos, r: toR } = newFn(switchT, s.current.dotRadius, now / s.current.speed, s.current.morphTimeline)
 
+        // Find optimal dot remapping: which current dot is closest to which target slot
+        const remap = findBestRemap(snap, toPos)
+
         s.current.fromPositions = snap
         s.current.fromRadii = snapR
         s.current.toPositions = toPos   // static target snapshot
         s.current.toRadii = toR
+        s.current.dotRemap = remap      // remap[currentDot] = targetDot it should blend toward
         s.current.transitionStart = now
         s.current.switchT = switchT     // remember phase so loop resumes here
       }
@@ -1032,19 +1062,21 @@ function ListenLabsIcon({ mode="breathe", speed=2, dotRadius=8, color=B.accent, 
       const tBlend = Math.min((now-st.transitionStart)/st.transitionDuration,1)
       const ease = easeInOut(tBlend)
       const bp={},br={}
-      // Blend between two STATIC snapshots — no moving target
+      // Blend between two STATIC snapshots using nearest-match remap
       const toPos = st.toPositions || tp
       const toR   = st.toRadii || tr
+      const remap = st.dotRemap || null
       for (const d of DOTS) {
-        const [fx,fy]=st.fromPositions[d],[tx,ty]=toPos[d]
+        const targetSlot = remap ? remap[d] : d  // blend toward nearest target, not own name
+        const [fx,fy]=st.fromPositions[d],[tx,ty]=toPos[targetSlot]
         bp[d]=[fx+(tx-fx)*ease,fy+(ty-fy)*ease]
-        br[d]=(st.fromRadii?.[d]??st.dotRadius)+(toR[d]-(st.fromRadii?.[d]??st.dotRadius))*ease
+        br[d]=(st.fromRadii?.[d]??st.dotRadius)+(toR[targetSlot]-(st.fromRadii?.[d]??st.dotRadius))*ease
       }
       fp=bp; fr=br
       if (tBlend>=1) {
         // Resume loop from the same phase so there's no discontinuity
         st.loopStart = now - (st.switchT || 0) * morphSpeed
-        st.fromPositions=null; st.fromRadii=null; st.toPositions=null; st.toRadii=null; st.transitionStart=null
+        st.fromPositions=null; st.fromRadii=null; st.toPositions=null; st.toRadii=null; st.dotRemap=null; st.transitionStart=null
       }
     }
     for (const d of DOTS) {
