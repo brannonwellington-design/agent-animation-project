@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create:*)",
+      "Bash(export PATH=\"/usr/local/bin:/opt/homebrew/bin:$HOME/.nvm/versions/node/*/bin:$HOME/.volta/bin:$HOME/.fnm/aliases/default/bin:$PATH\")",
+      "Bash(npm --version)",
+      "Bash(/Applications/Cursor.app/Contents/Resources/app/resources/helpers/node --version)",
+      "Bash(NODE=/Applications/Cursor.app/Contents/Resources/app/resources/helpers/node)",
+      "Read(//Users/brannonwellington/Documents/Claude Code Projects/Agent Animation Project 1/bin/**)",
+      "Read(//Users/brannonwellington/Documents/Claude Code Projects/Agent Animation Project 1/$\\(dirname $NODE\\)/**)",
+      "Read(//Users/brannonwellington/Documents/Claude Code Projects/Agent Animation Project 1/**)",
+      "Bash(/opt/homebrew/bin/brew list:*)",
+      "Bash(/opt/homebrew/bin/brew install:*)",
+      "Bash(export PATH=\"/opt/homebrew/bin:$PATH\")",
+      "Bash(cp temp-scaffold/index.html .)",
+      "Bash(cp temp-scaffold/vite.config.js .)",
+      "Bash(cp temp-scaffold/package.json .)",
+      "Bash(mkdir -p src)",
+      "Bash(cp temp-scaffold/src/main.jsx src/)",
+      "Bash(npm install:*)",
+      "mcp__Claude_Preview__preview_start",
+      "mcp__listen-labs-brand__get_full_guidelines",
+      "mcp__listen-labs-brand__get_brand_colors"
+    ]
+  }
+}
