@@ -992,6 +992,9 @@ const MODE_LABELS = {
   morph:"Morph →",
 }
 
+// Modes that use real-time `now` — need live targets during transitions
+const REALTIME_MODES = new Set(["oscilloscope","sine","lissajous","breathingSine","sawtooth","snake","drunk"])
+
 // ─── Icon component ───────────────────────────────────────────────────────────
 function ListenLabsIcon({ mode="breathe", speed=2, dotRadius=8, color=B.accent, size=92, transitionDuration=0.4, audioLevelRef=null, audioMode="off", selectedIcon="mic", iconStrokeWidth=5, morphTimeline=null, cycleAll=false, setSelectedIcon=null }) {
   const svgRef = useRef(null)
@@ -1062,12 +1065,13 @@ function ListenLabsIcon({ mode="breathe", speed=2, dotRadius=8, color=B.accent, 
       const tBlend = Math.min((now-st.transitionStart)/st.transitionDuration,1)
       const ease = easeInOut(tBlend)
       const bp={},br={}
-      // Blend between two STATIC snapshots using nearest-match remap
-      const toPos = st.toPositions || tp
-      const toR   = st.toRadii || tr
-      const remap = st.dotRemap || null
+      // Real-time modes (now-driven) use live targets; others use static snapshots
+      const useStatic = !REALTIME_MODES.has(st.mode)
+      const toPos = useStatic ? (st.toPositions || tp) : tp
+      const toR   = useStatic ? (st.toRadii || tr) : tr
+      const remap = useStatic ? (st.dotRemap || null) : null
       for (const d of DOTS) {
-        const targetSlot = remap ? remap[d] : d  // blend toward nearest target, not own name
+        const targetSlot = remap ? remap[d] : d
         const [fx,fy]=st.fromPositions[d],[tx,ty]=toPos[targetSlot]
         bp[d]=[fx+(tx-fx)*ease,fy+(ty-fy)*ease]
         br[d]=(st.fromRadii?.[d]??st.dotRadius)+(toR[targetSlot]-(st.fromRadii?.[d]??st.dotRadius))*ease
