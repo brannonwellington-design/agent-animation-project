@@ -1025,7 +1025,9 @@ function ListenLabsIcon({ mode="breathe", speed=2, dotRadius=8, color=B.accent, 
         // Compute where the NEW mode would be at the current loop phase
         const now = performance.now() / 1000
         const morphSpeed = mode === "morph" ? s.current.speed * 2 : s.current.speed
-        const switchT = s.current.loopStart !== null ? ((now - s.current.loopStart) % morphSpeed) / morphSpeed : 0
+        let switchT = s.current.loopStart !== null ? ((now - s.current.loopStart) % morphSpeed) / morphSpeed : 0
+        // Morph mode always starts fresh from t=0 (dots at home, icon hidden)
+        if (mode === "morph") switchT = 0
         const newFn = MODES[mode] || modeStatic
         const { pos: toPos, r: toR } = newFn(switchT, s.current.dotRadius, now / s.current.speed, s.current.morphTimeline)
 
@@ -1148,7 +1150,8 @@ function ListenLabsIcon({ mode="breathe", speed=2, dotRadius=8, color=B.accent, 
       const st = s.current
       const overlay = iconOverlayRef.current
       if (!overlay) return
-      if (st.mode_for_icon !== "morph") {
+      if (st.mode_for_icon !== "morph" || st.fromPositions) {
+        // Hide icon when not in morph mode OR during a transition
         iconScale.current = 0
       } else {
         const now = performance.now() / 1000
