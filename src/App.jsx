@@ -1961,9 +1961,9 @@ function ControlsPanel({ T, mode, setMode, speed, setSpeed, dotRadius, setDotRad
 
 // ─── App ──────────────────────────────────────────────────────────────────────
 export default function App() {
-  const [mode, setMode]                             = useState("breathe")
+  const [mode, setMode]                             = useState("allFaces")
   const [speed, setSpeed]                           = useState(2)
-  const [dotRadius, setDotRadius]                   = useState(10)
+  const [dotRadius, setDotRadius]                   = useState(12)
   const [size, setSize]                             = useState(250)
   const [transitionDuration, setTransitionDuration] = useState(0.6)
   const [color, setColor]                           = useState("#0021CC")
