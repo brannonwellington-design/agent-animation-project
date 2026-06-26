@@ -1,0 +1,72 @@
+import {
+  modeStatic, modeBreathe, modeFaceSimple, modeAllFaces, modeCombine, modeRotate,
+  modePairSwap, modeWave, modeTypewriter, modeSplit, modeTriangle, modeArrow,
+  modeScatter, modeGravity, modeMetronome, modeMorse, modeChase, modeFlock,
+  modeRecord, modeOscilloscope, modeNoise, modeStutter, modeReverb, modeSine,
+  modeStandingWave, modeLissajous, modeBreathingSine, modeSawtooth, modePhaseShift,
+  modeSnake, modeEQBars, modeWaveSimple, modeWaveDouble, modeWaveDrift,
+  modeOrbitPulse, modeSpiral, modeRelay, modeDrunk,
+} from './modes.js'
+import { modeMorph } from './morph.js'
+
+export const MODES = {
+  static:modeStatic, breathe:modeBreathe,
+  topFace:(t,r)=>modeFaceSimple(t,r,["tc","rt","cn","lt"]),
+  leftFace:(t,r)=>modeFaceSimple(t,r,["lt","cn","bc","lb"]),
+  rightFace:(t,r)=>modeFaceSimple(t,r,["rt","rb","bc","cn"]),
+  bottomFace:(t,r)=>modeFaceSimple(t,r,["bc","lb","cn","rb"]),
+  allFaces:modeAllFaces, combine:modeCombine, rotate:modeRotate,
+  pairSwap:modePairSwap, wave:modeWave,
+  typewriter:modeTypewriter, split:modeSplit,
+  triangle:modeTriangle, arrow:modeArrow,
+  scatter:modeScatter, gravity:modeGravity,
+  metronome:modeMetronome, morse:modeMorse,
+  chase:modeChase, flock:modeFlock,
+  record:modeRecord,
+  oscilloscope:modeOscilloscope, noise:modeNoise,
+  stutter:modeStutter, reverb:modeReverb,
+  sine:modeSine, standingWave:modeStandingWave,
+  lissajous:modeLissajous, breathingSine:modeBreathingSine,
+  sawtooth:modeSawtooth, phaseShift:modePhaseShift,
+  snake:modeSnake,
+  eqBars:modeEQBars,
+  waveSimple:modeWaveSimple,
+  waveDouble:modeWaveDouble,
+  waveDrift:modeWaveDrift,
+  orbitPulse:modeOrbitPulse,
+  spiral:modeSpiral,
+  relay:modeRelay,
+  drunk:modeDrunk,
+  morph:modeMorph,
+}
+
+
+export const MODE_LABELS = {
+  static:"Static", breathe:"Breathe", topFace:"Top Face", leftFace:"Left Face",
+  rightFace:"Right Face", bottomFace:"Bottom Face", allFaces:"All Faces",
+  combine:"Combine", rotate:"Rotate", pairSwap:"Pair Swap",
+  wave:"Wave", typewriter:"Typewriter", split:"Split",
+  triangle:"Triangle", arrow:"Arrow",
+  scatter:"Scatter", gravity:"Gravity",
+  metronome:"Metronome", morse:"Morse",
+  chase:"Chase", flock:"Flock",
+  record:"Record",
+  oscilloscope:"Oscilloscope", noise:"Noise",
+  stutter:"Stutter", reverb:"Reverb",
+  sine:"Sine", standingWave:"Standing Wave",
+  lissajous:"Lissajous", breathingSine:"Breathing Sine",
+  sawtooth:"Sawtooth", phaseShift:"Phase Shift",
+  snake:"Snake",
+  eqBars:"EQ Bars",
+  waveSimple:"Wave Simple",
+  waveDouble:"Wave Double",
+  waveDrift:"Wave Drift",
+  orbitPulse:"Orbit Pulse",
+  spiral:"Spiral",
+  relay:"Relay",
+  drunk:"Drunk",
+  morph:"Morph →",
+}
+
+// Modes that use real-time `now` — need live targets during transitions
+export const REALTIME_MODES = new Set(["oscilloscope","sine","lissajous","breathingSine","sawtooth","snake","drunk"])
