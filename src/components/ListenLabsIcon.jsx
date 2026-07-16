@@ -8,7 +8,7 @@ import { LUCIDE_ICONS } from "../icons/lucide-paths.js"
 import { BRAND } from "../theme/tokens.js"
 import { IconOverlay } from "./IconOverlay.jsx"
 
-export function ListenLabsIcon({ mode, speed, dotRadius, color=BRAND.accent, size, transitionDuration, audioLevelRef=null, audioMode="off", selectedIcon, iconStrokeWidth=5, morphTimeline=null, cycleAll=false, setSelectedIcon=null }) {
+export function ListenLabsIcon({ mode, speed, dotRadius, color=BRAND.accent, size, transitionDuration, audioLevelRef=null, audioBandsRef=null, audioMode="off", selectedIcon, iconStrokeWidth=5, morphTimeline=null, cycleAll=false, setSelectedIcon=null }) {
   const s = useRef({ mode, speed, dotRadius, color, fromPositions:null, fromRadii:null, transitionStart:null, transitionDuration, loopStart:null })
   const dotElsRef = useRef({})
   const grilleElsRef = useRef([])
@@ -28,6 +28,7 @@ export function ListenLabsIcon({ mode, speed, dotRadius, color=BRAND.accent, siz
   s.current.color = color
   s.current.audioMode = audioMode
   s.current.audioLevelRef = audioLevelRef
+  s.current.audioBandsRef = audioBandsRef
   s.current.morphTimeline = morphTimeline
   s.current.iconStrokeWidth = iconStrokeWidth
   s.current.cycleAll = cycleAll
@@ -120,19 +121,42 @@ export function ListenLabsIcon({ mode, speed, dotRadius, color=BRAND.accent, siz
       const grilleTarget = st.mode === "record" ? 1 : 0
       grilleT.current += (grilleTarget - grilleT.current) * 0.06
       if (Math.abs(grilleT.current - grilleTarget) < 0.005) grilleT.current = grilleTarget
+      const audioReactive = st.audioMode !== "off"
+      const globalLvl = st.audioLevelRef?.current ?? 0
+      const bandLvls = st.audioBandsRef?.current
+      const audioGain = st.audioMode === "plus" ? 1.35 : 1.0
+      const baseGrilleR = st.dotRadius * 0.42
       for (let i = 0; i < grilleElsRef.current.length; i++) {
         const el = grilleElsRef.current[i]
         const dot = GRILLE_DOTS[i]
         if (!el || !dot) continue
         let targetR
+        let gx = dot.x
+        let gy = dot.y
         if (grilleT.current > 0.95) {
-          const breath = 1 + 0.06 * Math.sin(now * (1.1 / st.speed))
-          targetR = st.dotRadius * 0.42 * breath
+          const breath = audioReactive
+            ? 1 + 0.02 * Math.sin(now * (1.1 / st.speed))
+            : 1 + 0.06 * Math.sin(now * (1.1 / st.speed))
+          const ringLvl = bandLvls?.[dot.ring] ?? globalLvl
+          const organic = audioReactive
+            ? 1 + 0.22 * ringLvl * Math.sin(dot.ring * 1.9 + i * 0.82 + now * 5.5)
+            : 1
+          const pulse = audioReactive
+            ? 1 + (globalLvl * 0.28 + ringLvl * 0.7) * audioGain
+            : 1
+          if (audioReactive) {
+            const expand = 1 + (globalLvl * 0.1 + ringLvl * 0.22) * audioGain
+            gx = CX + (dot.x - CX) * expand
+            gy = CY + (dot.y - CY) * expand
+          }
+          targetR = baseGrilleR * breath * pulse * organic
         } else {
           const ringDelay = dot.ring * 0.14
           const localT = Math.max(0, Math.min(1, (grilleT.current - ringDelay) / (1 - ringDelay)))
-          targetR = st.dotRadius * 0.42 * easeInOut(localT)
+          targetR = baseGrilleR * easeInOut(localT)
         }
+        el.setAttribute("cx", gx.toFixed(2))
+        el.setAttribute("cy", gy.toFixed(2))
         el.setAttribute("r", targetR.toFixed(2))
         el.setAttribute("fill", fill)
       }

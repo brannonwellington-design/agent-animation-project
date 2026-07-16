@@ -28,6 +28,7 @@ export default function App() {
     micStatus,
     setAudioActive,
     audioLevelRef,
+    audioBandsRef,
   } = useAudioAnalyser()
 
   const T = THEMES[themeKey]
@@ -44,6 +45,7 @@ export default function App() {
   const iconProps = {
     mode, speed, dotRadius, color, transitionDuration,
     audioLevelRef,
+    audioBandsRef,
     audioMode: audioActive ? audioMode : "off",
     selectedIcon, iconStrokeWidth, morphTimeline, cycleAll, setSelectedIcon,
   }

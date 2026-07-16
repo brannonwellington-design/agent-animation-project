@@ -8,6 +8,7 @@ export function useAudioAnalyser() {
   const analyserRef = useRef(null)
   const streamRef = useRef(null)
   const audioLevelRef = useRef(0)
+  const audioBandsRef = useRef([0, 0, 0, 0, 0])
   const audioRafRef = useRef(0)
 
   const setAudioActive = (valOrFn) => {
@@ -80,6 +81,7 @@ export function useAudioAnalyser() {
       if (audioCtxRef.current) { audioCtxRef.current.close(); audioCtxRef.current = null }
       analyserRef.current = null
       audioLevelRef.current = 0
+      audioBandsRef.current = [0, 0, 0, 0, 0]
       setAudioActiveRaw(false)
       setMicStatus("idle")
     }
@@ -88,6 +90,8 @@ export function useAudioAnalyser() {
   useEffect(() => {
     if (!audioActive) return
     const buf = new Uint8Array(analyserRef.current?.frequencyBinCount ?? 128)
+    const bandCount = audioBandsRef.current.length
+    const bandSmooth = new Array(bandCount).fill(0)
     let smooth = 0
     const poll = () => {
       audioRafRef.current = requestAnimationFrame(poll)
@@ -101,6 +105,19 @@ export function useAudioAnalyser() {
       const release = 0.08
       smooth = rms > smooth ? smooth + (rms - smooth) * attack : smooth + (rms - smooth) * release
       audioLevelRef.current = Math.min(1, smooth * 2.5)
+
+      const binsPerBand = Math.max(1, Math.floor(buf.length / bandCount))
+      for (let b = 0; b < bandCount; b++) {
+        const start = b * binsPerBand
+        const end = b === bandCount - 1 ? buf.length : start + binsPerBand
+        let bandSum = 0
+        for (let i = start; i < end; i++) bandSum += buf[i] * buf[i]
+        const bandRms = Math.sqrt(bandSum / (end - start)) / 255
+        bandSmooth[b] = bandRms > bandSmooth[b]
+          ? bandSmooth[b] + (bandRms - bandSmooth[b]) * attack
+          : bandSmooth[b] + (bandRms - bandSmooth[b]) * release
+        audioBandsRef.current[b] = Math.min(1, bandSmooth[b] * 3)
+      }
     }
     audioRafRef.current = requestAnimationFrame(poll)
     return () => cancelAnimationFrame(audioRafRef.current)
@@ -113,5 +130,6 @@ export function useAudioAnalyser() {
     micStatus,
     setAudioActive,
     audioLevelRef,
+    audioBandsRef,
   }
 }
