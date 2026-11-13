@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react"
-import { CX, CY, DOTS, HOME, VB, ICON_SCALE } from "../animation/constants.js"
+import { CX, CY, DOTS, DEFAULT_GOO, HOME, VB, ICON_SCALE } from "../animation/constants.js"
 import { easeInOut, findBestRemap, foldPingPong, getLoopPhase, getMorphSpeed } from "../animation/easing.js"
 import { withMorphTimeline } from "../animation/morph.js"
 import { MODES, REALTIME_MODES } from "../animation/registry.js"
@@ -8,7 +8,7 @@ import { LUCIDE_ICONS } from "../icons/lucide-paths.js"
 import { BRAND } from "../theme/tokens.js"
 import { IconOverlay } from "./IconOverlay.jsx"
 
-export function ListenLabsIcon({ mode, speed, dotRadius, color=BRAND.accent, size, transitionDuration, selectedIcon, iconStrokeWidth=5, morphTimeline=null, cycleAll=false, setSelectedIcon=null }) {
+export function ListenLabsIcon({ mode, speed, dotRadius, color=BRAND.accent, size, transitionDuration, selectedIcon, iconStrokeWidth=5, morphTimeline=null, cycleAll=false, setSelectedIcon=null, gooBlur=DEFAULT_GOO.blur, gooContrast=DEFAULT_GOO.contrast, gooThreshold=DEFAULT_GOO.threshold }) {
   const s = useRef({ mode, speed, dotRadius, color, fromPositions:null, fromRadii:null, transitionStart:null, transitionDuration, loopStart:null })
   const dotElsRef = useRef({})
   const quiverElsRef = useRef([])
@@ -24,6 +24,7 @@ export function ListenLabsIcon({ mode, speed, dotRadius, color=BRAND.accent, siz
   s.current.dotRadius = dotRadius
   s.current.transitionDuration = transitionDuration
   s.current.color = color
+  s.current.gooBlur = gooBlur
   s.current.morphTimeline = morphTimeline
   s.current.iconStrokeWidth = iconStrokeWidth
   s.current.cycleAll = cycleAll
@@ -205,7 +206,7 @@ export function ListenLabsIcon({ mode, speed, dotRadius, color=BRAND.accent, siz
         if (blurRef.current) {
           const scVal = iconScale.current
           const taper = scVal < 0.85 ? 0 : (scVal - 0.85) / 0.15
-          blurRef.current.setAttribute("stdDeviation", (4 * (1 - taper)).toFixed(3))
+          blurRef.current.setAttribute("stdDeviation", (st.gooBlur * (1 - taper)).toFixed(3))
         }
       }
     }
@@ -217,8 +218,8 @@ export function ListenLabsIcon({ mode, speed, dotRadius, color=BRAND.accent, siz
     <svg width={size} height={size} viewBox={`0 0 ${VB} ${VB}`} fill="none" style={{display:"block"}}>
       <defs>
         <filter id="ll-goo" x="-30%" y="-30%" width="160%" height="160%">
-          <feGaussianBlur ref={blurRef} in="SourceGraphic" stdDeviation="4" result="blur"/>
-          <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -9" result="goo"/>
+          <feGaussianBlur ref={blurRef} in="SourceGraphic" stdDeviation={gooBlur} result="blur"/>
+          <feColorMatrix in="blur" mode="matrix" values={`1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 ${gooContrast} ${(-gooContrast * gooThreshold).toFixed(3)}`} result="goo"/>
           <feComposite in="SourceGraphic" in2="goo" operator="atop"/>
         </filter>
       </defs>

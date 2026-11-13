@@ -13,6 +13,9 @@ export function ControlsPanel({ T, mode, setMode, speed, setSpeed, dotRadius, se
   iconStrokeWidth, setIconStrokeWidth,
   morphTimeline, setMorphTimeline,
   showFrame, setShowFrame,
+  gooBlur, setGooBlur,
+  gooContrast, setGooContrast,
+  gooThreshold, setGooThreshold,
 }) {
   const allModeKeys = Object.keys(MODES)
 
@@ -45,6 +48,15 @@ export function ControlsPanel({ T, mode, setMode, speed, setSpeed, dotRadius, se
         {!mobile && <ThemedSlider T={T} label="Size" value={size}         min={12}  max={320} step={1}    onChange={setSize} decimals={0} />}
         <ThemedSlider T={T} label="Transition" value={transitionDuration} min={0}   max={2}   step={0.05} onChange={setTransitionDuration} />
         <Toggle T={T} label="Frame" checked={showFrame} onChange={setShowFrame} />
+      </div>
+
+      <Divider T={T} />
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+        <SectionLabel T={T}>Goo</SectionLabel>
+        <ThemedSlider T={T} label="Strength"  value={gooBlur}      min={0} max={12} step={0.5}  onChange={setGooBlur} />
+        <ThemedSlider T={T} label="Contrast"  value={gooContrast}  min={1} max={60} step={1}    onChange={setGooContrast} decimals={0} />
+        <ThemedSlider T={T} label="Threshold" value={gooThreshold} min={0} max={0.9} step={0.01} onChange={setGooThreshold} decimals={2} />
       </div>
 
       <Divider T={T} />

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { DEFAULT_GOO } from "./animation/constants.js"
 import { DEFAULT_MORPH_TIMELINE } from "./animation/morph.js"
 import { ControlsPanel } from "./components/ControlsPanel.jsx"
 import { ListenLabsIcon } from "./components/ListenLabsIcon.jsx"
@@ -20,6 +21,9 @@ export default function App() {
   const [morphTimeline, setMorphTimeline] = useState({ ...DEFAULT_MORPH_TIMELINE })
   const [iconStrokeWidth, setIconStrokeWidth] = useState(5)
   const [showFrame, setShowFrame] = useState(false)
+  const [gooBlur, setGooBlur] = useState(DEFAULT_GOO.blur)
+  const [gooContrast, setGooContrast] = useState(DEFAULT_GOO.contrast)
+  const [gooThreshold, setGooThreshold] = useState(DEFAULT_GOO.threshold)
 
   const T = THEMES[themeKey]
 
@@ -35,6 +39,7 @@ export default function App() {
   const iconProps = {
     mode, speed, dotRadius, color, transitionDuration,
     selectedIcon, iconStrokeWidth, morphTimeline, cycleAll, setSelectedIcon,
+    gooBlur, gooContrast, gooThreshold,
   }
 
   const panelProps = {
@@ -46,6 +51,9 @@ export default function App() {
     iconStrokeWidth, setIconStrokeWidth,
     morphTimeline, setMorphTimeline,
     showFrame, setShowFrame,
+    gooBlur, setGooBlur,
+    gooContrast, setGooContrast,
+    gooThreshold, setGooThreshold,
   }
 
   // Frame outline marks the icon's full canvas (SVG bounds) for reference

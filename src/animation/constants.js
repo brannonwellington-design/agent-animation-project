@@ -30,6 +30,10 @@ export const DOTS = ["tc", "lt", "rt", "cn", "lb", "rb", "bc"]
 export const CW = ["tc", "rt", "rb", "bc", "lb", "lt"]
 export const ICON_SCALE = 2.8
 
+// Goo filter defaults: blur amount, edge contrast, and the opacity cutoff where the
+// blob edge sits (0–1). The filter's alpha is contrast * a - contrast * threshold.
+export const DEFAULT_GOO = { blur: 5, contrast: 60, threshold: 0.3 }
+
 export function uniformRadii(r) {
   return Object.fromEntries(DOTS.map(d => [d, r]))
 }
