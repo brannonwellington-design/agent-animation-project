@@ -1,19 +1,7 @@
 import { useEffect, useState } from "react"
 import { DEFAULT_MORPH_TIMELINE } from "./animation/morph.js"
-import { DEFAULT_ASPECT } from "./animation/formFactors.js"
-import {
-  DEFAULT_STRING_COUNT,
-  DEFAULT_DOTS_PER_STRING,
-  DEFAULT_STRING_STAGGER,
-  DEFAULT_EDGE_OVERLAP,
-  DEFAULT_STAGGER_MODE,
-  DEFAULT_SPEECH_VARIANT,
-  SPEECH_VARIANT_KEYS,
-} from "./animation/speechVariants.js"
 import { ControlsPanel } from "./components/ControlsPanel.jsx"
 import { ListenLabsIcon } from "./components/ListenLabsIcon.jsx"
-import { SpeechVisualizer } from "./components/SpeechVisualizer.jsx"
-import { useAudioAnalyser, DEFAULT_BAND_SENSITIVITY } from "./hooks/useAudioAnalyser.js"
 import { BRAND, THEMES, btnBase, fontFamily } from "./theme/tokens.js"
 
 export default function App() {
@@ -32,36 +20,7 @@ export default function App() {
   const [morphTimeline, setMorphTimeline] = useState({ ...DEFAULT_MORPH_TIMELINE })
   const [iconStrokeWidth, setIconStrokeWidth] = useState(5)
 
-  const [formFactor, setFormFactor] = useState("square")
-  const [aspect, setAspect] = useState(DEFAULT_ASPECT)
-  const [speechVariant, setSpeechVariant] = useState(DEFAULT_SPEECH_VARIANT)
-  const [stringCount, setStringCount] = useState(DEFAULT_STRING_COUNT)
-  const [dotsPerString, setDotsPerString] = useState(DEFAULT_DOTS_PER_STRING)
-  const [stringStagger, setStringStagger] = useState(DEFAULT_STRING_STAGGER)
-  const [staggerMode, setStaggerMode] = useState(DEFAULT_STAGGER_MODE)
-  const [staggerSeed, setStaggerSeed] = useState(1)
-  const [edgeOverlap, setEdgeOverlap] = useState(DEFAULT_EDGE_OVERLAP)
-  const [audioEdgeOverlap, setAudioEdgeOverlap] = useState(false)
-  const [gooEnabled, setGooEnabled] = useState(true)
-  const [bandSensitivity, setBandSensitivity] = useState(() => DEFAULT_BAND_SENSITIVITY())
-
-  const {
-    audioActive,
-    audioMode,
-    setAudioMode,
-    micStatus,
-    setAudioActive,
-    audioLevelRef,
-    audioBandsRef,
-    speechFeaturesRef,
-    bandSensitivityRef,
-  } = useAudioAnalyser()
-
-  // Keep analyser in sync without re-subscribing the audio poll
-  bandSensitivityRef.current = bandSensitivity
-
   const T = THEMES[themeKey]
-  const isWide = formFactor === "wide"
 
   useEffect(() => {
     const check = () => setMobile(window.innerWidth < 640)
@@ -70,24 +29,10 @@ export default function App() {
     return () => window.removeEventListener("resize", check)
   }, [])
 
-  useEffect(() => {
-    if (!SPEECH_VARIANT_KEYS.includes(speechVariant)) {
-      setSpeechVariant(DEFAULT_SPEECH_VARIANT)
-    }
-  }, [speechVariant])
-
-  // Wide canvas uses `size` as pixel height; square uses it as icon size
-  const iconSize = mobile
-    ? (isWide ? Math.min(window.innerWidth * 0.16, 96) : Math.min(window.innerWidth * 0.5, 180))
-    : size
-
-  const speechDotRadius = dotRadius
+  const iconSize = mobile ? Math.min(window.innerWidth * 0.5, 180) : size
 
   const iconProps = {
     mode, speed, dotRadius, color, transitionDuration,
-    audioLevelRef,
-    audioBandsRef,
-    audioMode: audioActive ? audioMode : "off",
     selectedIcon, iconStrokeWidth, morphTimeline, cycleAll, setSelectedIcon,
   }
 
@@ -95,47 +40,13 @@ export default function App() {
     T, mode, setMode, speed, setSpeed, dotRadius, setDotRadius,
     size, setSize, transitionDuration, setTransitionDuration,
     color, setColor, mobile,
-    audioActive, setAudioActive, audioMode, setAudioMode, micStatus,
     selectedIcon, setSelectedIcon,
     cycleAll, setCycleAll,
     iconStrokeWidth, setIconStrokeWidth,
     morphTimeline, setMorphTimeline,
-    formFactor, setFormFactor,
-    aspect, setAspect,
-    speechVariant, setSpeechVariant,
-    stringCount, setStringCount,
-    dotsPerString, setDotsPerString,
-    stringStagger, setStringStagger,
-    staggerMode, setStaggerMode,
-    staggerSeed, setStaggerSeed,
-    edgeOverlap, setEdgeOverlap,
-    audioEdgeOverlap, setAudioEdgeOverlap,
-    gooEnabled, setGooEnabled,
-    bandSensitivity, setBandSensitivity,
   }
 
-  const stage = isWide ? (
-    <SpeechVisualizer
-      variant={speechVariant}
-      aspect={aspect}
-      height={iconSize}
-      dotRadius={speechDotRadius}
-      color={color}
-      speechFeaturesRef={speechFeaturesRef}
-      audioActive={audioActive}
-      audioMode={audioActive ? audioMode : "off"}
-      stringCount={stringCount}
-      dotsPerString={dotsPerString}
-      stringStagger={stringStagger}
-      staggerMode={staggerMode}
-      staggerSeed={staggerSeed}
-      edgeOverlap={edgeOverlap}
-      audioEdgeOverlap={audioEdgeOverlap}
-      gooEnabled={gooEnabled}
-    />
-  ) : (
-    <ListenLabsIcon {...iconProps} size={iconSize} />
-  )
+  const stage = <ListenLabsIcon {...iconProps} size={iconSize} />
 
   return (
     <div style={{
@@ -153,7 +64,7 @@ export default function App() {
         textAlign: "center", fontSize: 12, zIndex: 20, pointerEvents: "none",
       }}>
         <span style={{ color: T.inkSecondary }}>Listen Labs / </span>
-        <span style={{ color: T.ink }}>{isWide ? "Speech Visualizer" : "Icon Preview"}</span>
+        <span style={{ color: T.ink }}>Icon Preview</span>
       </div>
 
       <button
@@ -176,7 +87,6 @@ export default function App() {
             flex: "0 0 auto", height: 200,
             display: "flex", alignItems: "center", justifyContent: "center",
             background: T.canvas,
-            padding: isWide ? "0 12px" : 0,
             overflow: "hidden",
           }}>
             {stage}

@@ -9,11 +9,9 @@ export function getMorphSpeed(mode, speed) {
   return mode === "morph" ? speed * 2 : speed
 }
 
-export function getLoopPhase(now, loopStart, speed, mode, audioLevelRef, audioMode) {
+export function getLoopPhase(now, loopStart, speed, mode) {
   const morphSpeed = getMorphSpeed(mode, speed)
-  const rawT = loopStart !== null ? ((now - loopStart) % morphSpeed) / morphSpeed : 0
-  const lvl = audioLevelRef?.current ?? 0
-  return audioMode !== "off" ? (rawT + lvl * 0.35) % 1 : rawT
+  return loopStart !== null ? ((now - loopStart) % morphSpeed) / morphSpeed : 0
 }
 
 // Find optimal dot assignment: maps each current dot to the nearest target slot

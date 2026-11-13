@@ -322,16 +322,7 @@ export function modeFlock(t, baseR) {
   return { pos, r }
 }
 
-export function modeRecord(_t, _baseR) {
-  const pos = {}; const r = {}
-  for (const d of DOTS) {
-    pos[d] = [CX, CY]
-    r[d] = 0  // hidden — grille overlay takes over
-  }
-  return { pos, r }
-}
-
-// ─── AUDIO MODES ──────────────────────────────────────────────────────────────
+// ─── AUDIO-STYLE MODES (time-driven) ──────────────────────────────────────────
 
 // OSCILLOSCOPE — dots trace a morphing sine wave across the icon L→R, seamless
 export function modeOscilloscope(t, baseR, now) {
@@ -524,7 +515,7 @@ export function modeSnake(t, baseR, now) {
   return { pos, r }
 }
 
-// ─── AUDIO REACTIVE MODES ─────────────────────────────────────────────────────
+// ─── EQ / WAVE MODES (time-driven) ────────────────────────────────────────────
 
 // EQ BARS — each band frequency is a rational multiple so all bands complete cleanly
 export function modeEQBars(t, baseR) {

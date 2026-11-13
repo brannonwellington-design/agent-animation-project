@@ -34,24 +34,3 @@ export function uniformRadii(r) {
   return Object.fromEntries(DOTS.map(d => [d, r]))
 }
 
-export const GRILLE_DOTS = (() => {
-  const dots = []
-  const rings = [
-    { r: 0, n: 1 },
-    { r: 12, n: 6 },
-    { r: 22, n: 10 },
-    { r: 32, n: 14 },
-    { r: 42, n: 18 },
-  ]
-  rings.forEach(({ r, n }, ri) => {
-    for (let i = 0; i < n; i++) {
-      const angle = (i / n) * Math.PI * 2 - Math.PI / 2
-      dots.push({
-        x: CX + r * Math.cos(angle),
-        y: CY + r * Math.sin(angle),
-        ring: ri,
-      })
-    }
-  })
-  return dots
-})()
