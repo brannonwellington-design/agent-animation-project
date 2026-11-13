@@ -295,7 +295,7 @@ export function ControlsPanel({ T, mode, setMode, speed, setSpeed, dotRadius, se
           <>
             <ThemedSlider T={T} label="Speed"      value={speed}              min={0.2} max={10}  step={0.1}  onChange={setSpeed} />
             <ThemedSlider T={T} label="Dot radius" value={dotRadius}          min={1}   max={20}  step={0.5}  onChange={setDotRadius} />
-            {!mobile && <ThemedSlider T={T} label="Size" value={size}         min={48}  max={320} step={1}    onChange={setSize} decimals={0} />}
+            {!mobile && <ThemedSlider T={T} label="Size" value={size}         min={12}  max={320} step={1}    onChange={setSize} decimals={0} />}
             <ThemedSlider T={T} label="Transition" value={transitionDuration} min={0}   max={2}   step={0.05} onChange={setTransitionDuration} />
           </>
         )}
