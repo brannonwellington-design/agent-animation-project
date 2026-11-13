@@ -60,3 +60,32 @@ export function IconButton({ T, children, onClick, disabled, style }) {
     </button>
   )
 }
+
+export function Toggle({ T, label, checked, onChange }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <span style={{ fontSize: 11, color: T.inkSecondary, fontFamily }}>{label}</span>
+      <div
+        role="switch"
+        aria-checked={checked}
+        aria-label={label}
+        onClick={() => onChange(!checked)}
+        style={{
+          width: 32, height: 18, borderRadius: 9,
+          background: checked ? T.accent : T.border,
+          cursor: "pointer", position: "relative",
+          transition: "background 0.2s", flexShrink: 0,
+        }}
+      >
+        <div style={{
+          position: "absolute", top: 2,
+          left: checked ? 16 : 2,
+          width: 14, height: 14, borderRadius: "50%",
+          background: "#fff",
+          transition: "left 0.2s",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+        }} />
+      </div>
+    </div>
+  )
+}

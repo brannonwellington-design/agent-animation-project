@@ -19,6 +19,7 @@ export default function App() {
   const [cycleAll, setCycleAll] = useState(false)
   const [morphTimeline, setMorphTimeline] = useState({ ...DEFAULT_MORPH_TIMELINE })
   const [iconStrokeWidth, setIconStrokeWidth] = useState(5)
+  const [showFrame, setShowFrame] = useState(false)
 
   const T = THEMES[themeKey]
 
@@ -44,9 +45,18 @@ export default function App() {
     cycleAll, setCycleAll,
     iconStrokeWidth, setIconStrokeWidth,
     morphTimeline, setMorphTimeline,
+    showFrame, setShowFrame,
   }
 
-  const stage = <ListenLabsIcon {...iconProps} size={iconSize} />
+  // Frame outline marks the icon's full canvas (SVG bounds) for reference
+  const stage = (
+    <div style={{
+      flexShrink: 0,
+      outline: showFrame ? `1px dashed ${T.inkSecondary}` : "none",
+    }}>
+      <ListenLabsIcon {...iconProps} size={iconSize} />
+    </div>
+  )
 
   return (
     <div style={{

@@ -1,10 +1,10 @@
 import { MODES, MODE_LABELS } from '../animation/registry.js'
 import { LUCIDE_ICONS } from '../icons/lucide-paths.js'
-import { BRAND, COLOR_SWATCHES, btnBase, fontFamily } from '../theme/tokens.js'
+import { BRAND, COLOR_SWATCHES, btnBase } from '../theme/tokens.js'
 import { MorphTimeline } from './MorphTimeline.jsx'
 import { ThemedSelect } from './ThemedSelect.jsx'
 import { ThemedSlider } from './ThemedSlider.jsx'
-import { ColorSwatch, Divider, IconButton, SectionLabel } from './ui.jsx'
+import { ColorSwatch, Divider, IconButton, SectionLabel, Toggle } from './ui.jsx'
 
 export function ControlsPanel({ T, mode, setMode, speed, setSpeed, dotRadius, setDotRadius,
   size, setSize, transitionDuration, setTransitionDuration, color, setColor, mobile,
@@ -12,6 +12,7 @@ export function ControlsPanel({ T, mode, setMode, speed, setSpeed, dotRadius, se
   cycleAll, setCycleAll,
   iconStrokeWidth, setIconStrokeWidth,
   morphTimeline, setMorphTimeline,
+  showFrame, setShowFrame,
 }) {
   const allModeKeys = Object.keys(MODES)
 
@@ -43,6 +44,7 @@ export function ControlsPanel({ T, mode, setMode, speed, setSpeed, dotRadius, se
         <ThemedSlider T={T} label="Dot radius" value={dotRadius}          min={1}   max={20}  step={0.5}  onChange={setDotRadius} />
         {!mobile && <ThemedSlider T={T} label="Size" value={size}         min={12}  max={320} step={1}    onChange={setSize} decimals={0} />}
         <ThemedSlider T={T} label="Transition" value={transitionDuration} min={0}   max={2}   step={0.05} onChange={setTransitionDuration} />
+        <Toggle T={T} label="Frame" checked={showFrame} onChange={setShowFrame} />
       </div>
 
       <Divider T={T} />
@@ -56,27 +58,7 @@ export function ControlsPanel({ T, mode, setMode, speed, setSpeed, dotRadius, se
             ))}
           </ThemedSelect>
 
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ fontSize: 11, color: T.inkSecondary, fontFamily }}>Cycle all</span>
-            <div
-              onClick={() => setCycleAll(v => !v)}
-              style={{
-                width: 32, height: 18, borderRadius: 9,
-                background: cycleAll ? T.accent : T.border,
-                cursor: "pointer", position: "relative",
-                transition: "background 0.2s", flexShrink: 0,
-              }}
-            >
-              <div style={{
-                position: "absolute", top: 2,
-                left: cycleAll ? 16 : 2,
-                width: 14, height: 14, borderRadius: "50%",
-                background: "#fff",
-                transition: "left 0.2s",
-                boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
-              }} />
-            </div>
-          </div>
+          <Toggle T={T} label="Cycle all" checked={cycleAll} onChange={setCycleAll} />
 
           <ThemedSlider T={T} label="Stroke width" value={iconStrokeWidth} min={0.5} max={10} step={0.25} onChange={setIconStrokeWidth} />
           <MorphTimeline T={T} morphTimeline={morphTimeline} setMorphTimeline={setMorphTimeline} speed={speed} />
