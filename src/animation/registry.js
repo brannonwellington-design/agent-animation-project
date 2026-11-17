@@ -6,6 +6,7 @@ import {
   modeStandingWave, modeLissajous, modeBreathingSine, modeSawtooth, modePhaseShift,
   modeSnake, modeEQBars, modeWaveSimple, modeWaveDouble, modeWaveDrift,
   modeOrbitPulse, modeSpiral, modeRelay, modeDrunk,
+  modeBudding, modeCubeTumble, modeLavaLamp, modeCenterSwap, modeRicochet, modeTyping,
 } from './modes.js'
 import { modeMorph } from './morph.js'
 
@@ -36,6 +37,8 @@ export const MODES = {
   spiral:modeSpiral,
   relay:modeRelay,
   drunk:modeDrunk,
+  budding:modeBudding, cubeTumble:modeCubeTumble, lavaLamp:modeLavaLamp,
+  centerSwap:modeCenterSwap, ricochet:modeRicochet, typing:modeTyping,
   morph:modeMorph,
 }
 
@@ -63,6 +66,8 @@ export const MODE_LABELS = {
   spiral:"Spiral",
   relay:"Relay",
   drunk:"Drunk",
+  budding:"Budding", cubeTumble:"Cube Tumble", lavaLamp:"Lava Lamp",
+  centerSwap:"Center Swap", ricochet:"Ricochet", typing:"Typing",
   morph:"Morph →",
 }
 

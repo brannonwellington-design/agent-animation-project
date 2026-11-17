@@ -649,3 +649,175 @@ export function modeDrunk(t, baseR, now) {
   })
   return { pos, r }
 }
+
+// ─── SHAPE-PLAY MODES ─────────────────────────────────────────────────────────
+// Each keeps every dot inside the frame and matches itself at t = 0 and t = 1.
+
+const clamp01 = (x) => Math.max(0, Math.min(1, x))
+const lerp = (a, b, k) => a + (b - a) * k
+
+// Ease with a small overshoot, so a bud "snaps" past its spot and settles
+function easeOutBack(x, s = 1.3) {
+  const p = x - 1
+  return 1 + (s + 1) * p * p * p + s * p * p
+}
+
+// ─── BUDDING ──────────────────────────────────────────────────────────────────
+// All dots start merged at the center; the six outer dots pinch off one at a
+// time clockwise (the goo filter draws the stretching neck), then get pulled
+// back in together. The center blob shrinks as buds leave it.
+const BUD_ORDER = ["tc", "rt", "rb", "bc", "lb", "lt"]
+export function modeBudding(t, baseR) {
+  const pos = { cn: [CX, CY] }; const r = {}
+  const retract = easeInOut(clamp01((t - 0.78) / 0.17)) // 0.78 → 0.95
+  let stillMerged = 0
+  BUD_ORDER.forEach((d, i) => {
+    const start = 0.06 + i * 0.08
+    const out = clamp01((t - start) / 0.16)
+    const k = easeOutBack(out) * (1 - retract)
+    const [hx, hy] = HOME[d]
+    pos[d] = [lerp(CX, hx, k), lerp(CY, hy, k)]
+    r[d] = baseR
+    stillMerged += 1 - Math.min(1, k)
+  })
+  r.cn = baseR * (1 + 0.5 * (stillMerged / BUD_ORDER.length))
+  return { pos, r }
+}
+
+// ─── CUBE TUMBLE ──────────────────────────────────────────────────────────────
+// Real 3D quarter turn about the vertical axis. The top face's 4 corners ride an
+// ellipse around (CX, 50); the bottom face's visible corners ride one around
+// (CX, 90). Angles: right 0°, back 90°, left 180°, front 270°.
+// The bottom face has 4 corners but only 3 dots — the one that rotates to the
+// back keeps travelling behind the cube (shrunk to nothing while hidden) and
+// reappears on the far side, so the hidden corner is never needed on screen.
+const TOP_RING = { rt: 0, tc: 90, lt: 180, cn: 270 }
+const BOTTOM_RING = { rb: 0, lb: 180, bc: 270 }
+const RING = { rx: 40, ry: 20, topY: 50, bottomY: 90 }
+const ringPoint = (deg, cy) => {
+  const a = (deg * Math.PI) / 180
+  return [CX + RING.rx * Math.cos(a), cy - RING.ry * Math.sin(a)]
+}
+export function modeCubeTumble(t, baseR) {
+  const p = easeInOut(clamp01(t / 0.6)) // turn during 0–0.6, hold the rest
+  const motion = Math.sin(Math.PI * p)  // depth cue only while moving
+  const pos = {}; const r = {}
+  for (const [d, a0] of Object.entries(TOP_RING)) {
+    const a = a0 + 90 * p
+    pos[d] = ringPoint(a, RING.topY)
+    // nearer (front) corners swell slightly, far ones shrink, mid-turn only
+    r[d] = baseR * (1 - 0.18 * Math.sin((a * Math.PI) / 180) * motion)
+  }
+  for (const [d, a0] of Object.entries(BOTTOM_RING)) {
+    const travel = d === "rb" ? 180 : 90 // the dot that goes round the back
+    const a = a0 + travel * p
+    pos[d] = ringPoint(a, RING.bottomY)
+    const s = Math.sin((a * Math.PI) / 180) // > 0 means behind the cube
+    r[d] = s > 0
+      ? baseR * clamp01(1 - s * 2.2)
+      : baseR * (1 - 0.18 * s * motion)
+  }
+  return { pos, r }
+}
+
+// ─── LAVA LAMP ────────────────────────────────────────────────────────────────
+// Dots keep their three columns but rise and fall at offset phases, so dots in
+// the same column pass through each other and the goo merges and splits them.
+// Integer frequencies keep the loop exact; lower Speed for a calmer lamp.
+const LAVA = {
+  tc: { phase: 0.00, sway: 0.25 }, cn: { phase: 0.36, sway: 0.70 }, bc: { phase: 0.68, sway: 0.10 },
+  lt: { phase: 0.15, sway: 0.55 }, lb: { phase: 0.62, sway: 0.90 },
+  rt: { phase: 0.45, sway: 0.40 }, rb: { phase: 0.88, sway: 0.05 },
+}
+export function modeLavaLamp(t, baseR) {
+  const pos = {}; const r = {}
+  for (const d of DOTS) {
+    const { phase, sway } = LAVA[d]
+    const lift = Math.sin(2 * Math.PI * (t + phase))
+    const y = CY + 34 * lift
+    const x = HOME[d][0] + 7 * Math.sin(2 * Math.PI * (t + sway))
+    pos[d] = [x, y]
+    // warmer (lower) blobs are a little bigger, cooler (higher) ones smaller
+    r[d] = baseR * (1 + 0.15 * lift)
+  }
+  return { pos, r }
+}
+
+// ─── CENTER SWAP ──────────────────────────────────────────────────────────────
+// The logo stays intact; the center dot trades places with each ring dot in
+// turn, clockwise. The pair pass around each other on slight opposite arcs,
+// and the goo fuses them as they cross. All dots stay full size.
+const SWAP_RING = ["tc", "rt", "rb", "bc", "lb", "lt"]
+export function modeCenterSwap(t, baseR) {
+  const pos = {}; const r = uniformRadii(baseR)
+  // Walk the swaps completed before this one to find who sits where
+  const slotOf = Object.fromEntries(DOTS.map(d => [d, d])) // dot → home slot
+  let center = "cn"
+  const k = Math.min(5, Math.floor(t * 6))
+  for (let i = 0; i < k; i++) {
+    const ringDot = DOTS.find(d => slotOf[d] === SWAP_RING[i])
+    slotOf[center] = SWAP_RING[i]; slotOf[ringDot] = "cn"; center = ringDot
+  }
+  const target = SWAP_RING[k]
+  const outgoing = DOTS.find(d => slotOf[d] === target)
+  const e = easeInOut(clamp01(((t * 6) % 1) / 0.6)) // swap over 60% of its slot
+  for (const d of DOTS) pos[d] = [...HOME[slotOf[d]]]
+  const [sx, sy] = HOME[target]
+  const nx = -(sy - CY), ny = sx - CX // perpendicular, for the arcs
+  const len = Math.hypot(nx, ny) || 1
+  const bow = 9 * Math.sin(Math.PI * e)
+  pos[center] = [lerp(CX, sx, e) + (nx / len) * bow, lerp(CY, sy, e) + (ny / len) * bow]
+  pos[outgoing] = [lerp(sx, CX, e) - (nx / len) * bow, lerp(sy, CY, e) - (ny / len) * bow]
+  return { pos, r }
+}
+
+// ─── RICOCHET ─────────────────────────────────────────────────────────────────
+// The ring holds still while the center dot bounces around inside it, striking
+// six ring dots in a star pattern. Each struck dot recoils outward and settles.
+// All dots stay full size.
+const HIT_ORDER = ["tc", "rb", "lb", "rt", "bc", "lt"]
+function contactPoint(d, baseR) {
+  const [hx, hy] = HOME[d]
+  const dx = CX - hx, dy = CY - hy, len = Math.hypot(dx, dy)
+  const reach = baseR * 1.8 // just touching, slight overlap so the goo fuses
+  return [hx + (dx / len) * reach, hy + (dy / len) * reach]
+}
+export function modeRicochet(t, baseR) {
+  const pos = {}; const r = uniformRadii(baseR)
+  const seg = t * 6
+  const k = Math.min(5, Math.floor(seg))
+  const from = contactPoint(HIT_ORDER[k], baseR)
+  const to = contactPoint(HIT_ORDER[(k + 1) % 6], baseR)
+  const p = seg - k // straight, even-speed flight between strikes
+  pos.cn = [lerp(from[0], to[0], p), lerp(from[1], to[1], p)]
+  HIT_ORDER.forEach((d, i) => {
+    const since = (((t - i / 6) % 1) + 1) % 1 // time since this dot was struck
+    const kick = since < 0.09 ? 7 * Math.sin(Math.PI * since / 0.09) : 0
+    const [hx, hy] = HOME[d]
+    const dx = hx - CX, dy = hy - CY, len = Math.hypot(dx, dy)
+    pos[d] = [hx + (dx / len) * kick, hy + (dy / len) * kick]
+  })
+  return { pos, r }
+}
+
+// ─── TYPING ───────────────────────────────────────────────────────────────────
+// The logo's three columns fold down into three blobs in a row — the familiar
+// "someone is typing…" indicator — which bounce in sequence twice, then unfold
+// back into the logo. Every dot stays full size; the goo fuses each column.
+const COLUMNS = [["lt", "lb"], ["tc", "cn", "bc"], ["rt", "rb"]]
+export function modeTyping(t, baseR) {
+  const pos = {}; const r = uniformRadii(baseR)
+  const fold = easeInOut(clamp01(t / 0.14)) * (1 - easeInOut(clamp01((t - 0.82) / 0.14)))
+  COLUMNS.forEach((col, i) => {
+    let hop = 0
+    for (let c = 0; c < 2; c++) {
+      const k = clamp01((t - (0.2 + c * 0.28 + i * 0.07)) / 0.12)
+      hop += 13 * Math.sin(Math.PI * k)
+    }
+    for (const d of col) {
+      const [hx, hy] = HOME[d]
+      pos[d] = [hx, lerp(hy, CY, fold) - hop * fold]
+    }
+  })
+  return { pos, r }
+}
